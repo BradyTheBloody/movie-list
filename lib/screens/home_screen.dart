@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:movie_list/screens/form_screen.dart';
+import 'package:movie_list/screens/list_screen.dart';
 import 'package:movie_list/screens/media_screen.dart';
 import 'package:movie_list/services/hive_services.dart';
 import 'package:movie_list/models/media_item.dart';
@@ -673,23 +674,23 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_selectedCategory == TypeOfMedia.film) {
       return [
         if (_lastFilms.isNotEmpty) ...[
-          _sectionHeader('Ultimi film aggiunti'),
+          _sectionHeader('Ultimi film aggiunti', _lastFilms),
           _cardRow(_lastFilms),
         ],
         if (_filmsToWatch.isNotEmpty) ...[
-          _sectionHeader('Film da guardare'),
+          _sectionHeader('Film da guardare', _filmsToWatch),
           _cardRow(_filmsToWatch),
         ],
         if (_topRatedFilms.isNotEmpty) ...[
-          _sectionHeader('Miglior valutazione'),
+          _sectionHeader('Miglior valutazione', _topRatedFilms),
           _cardRow(_topRatedFilms),
         ],
         if (_genreOne != null && _filmsByGenreOne.isNotEmpty) ...[
-          _sectionHeader('Film $_genreOne'),
+          _sectionHeader('Film $_genreOne', _filmsByGenreOne),
           _cardRow(_filmsByGenreOne),
         ],
         if (_genreTwo != null && _filmsByGenreTwo.isNotEmpty) ...[
-          _sectionHeader('Film $_genreTwo'),
+          _sectionHeader('Film $_genreTwo', _filmsByGenreTwo),
           _cardRow(_filmsByGenreTwo),
         ],
       ];
@@ -698,27 +699,27 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_selectedCategory == TypeOfMedia.serie) {
       return [
         if (_lastSeries.isNotEmpty) ...[
-          _sectionHeader('Ultime serie aggiunte'),
+          _sectionHeader('Ultime serie aggiunte', _lastSeries),
           _cardRow(_lastSeries),
         ],
         if (_continueWatchingSeries.isNotEmpty) ...[
-          _sectionHeader('Continua a guardare'),
+          _sectionHeader('Continua a guardare', _continueWatchingSeries),
           _continueWatchingRow(_continueWatchingSeries),
         ],
         if (_seriesToWatch.isNotEmpty) ...[
-          _sectionHeader('Serie da guardare'),
+          _sectionHeader('Serie da guardare', _seriesToWatch),
           _cardRow(_seriesToWatch),
         ],
         if (_topRatedSeries.isNotEmpty) ...[
-          _sectionHeader('Miglior valutazione'),
+          _sectionHeader('Miglior valutazione', _topRatedSeries),
           _cardRow(_topRatedSeries),
         ],
         if (_serieGenreOne != null && _seriesByGenreOne.isNotEmpty) ...[
-          _sectionHeader('Serie $_serieGenreOne'),
+          _sectionHeader('Serie $_serieGenreOne', _seriesByGenreOne),
           _cardRow(_seriesByGenreOne),
         ],
         if (_serieGenreTwo != null && _seriesByGenreTwo.isNotEmpty) ...[
-          _sectionHeader('Serie $_serieGenreTwo'),
+          _sectionHeader('Serie $_serieGenreTwo', _seriesByGenreTwo),
           _cardRow(_seriesByGenreTwo),
         ],
       ];
@@ -727,27 +728,27 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_selectedCategory == TypeOfMedia.anime) {
       return [
         if (_lastAnime.isNotEmpty) ...[
-          _sectionHeader('Ultimi anime aggiunti'),
+          _sectionHeader('Ultimi anime aggiunti', _lastAnime),
           _cardRow(_lastAnime),
         ],
         if (_continueWatchingAnime.isNotEmpty) ...[
-          _sectionHeader('Continua a guardare'),
+          _sectionHeader('Continua a guardare', _continueWatchingAnime),
           _continueWatchingRow(_continueWatchingAnime),
         ],
         if (_animeToWatch.isNotEmpty) ...[
-          _sectionHeader('Anime da guardare'),
+          _sectionHeader('Anime da guardare', _animeToWatch),
           _cardRow(_animeToWatch),
         ],
         if (_topRatedAnime.isNotEmpty) ...[
-          _sectionHeader('Miglior valutazione'),
+          _sectionHeader('Miglior valutazione', _topRatedAnime),
           _cardRow(_topRatedAnime),
         ],
         if (_animeGenreOne != null && _animeByGenreOne.isNotEmpty) ...[
-          _sectionHeader('Anime $_animeGenreOne'),
+          _sectionHeader('Anime $_animeGenreOne', _animeByGenreOne),
           _cardRow(_animeByGenreOne),
         ],
         if (_animeGenreTwo != null && _animeByGenreTwo.isNotEmpty) ...[
-          _sectionHeader('Anime $_animeGenreTwo'),
+          _sectionHeader('Anime $_animeGenreTwo', _animeByGenreTwo),
           _cardRow(_animeByGenreTwo),
         ],
       ];
@@ -756,9 +757,9 @@ class _HomeScreenState extends State<HomeScreen> {
     return [];
   }
 
-  Widget _sectionHeader(String title) {
+  Widget _sectionHeader(String title, List<MediaItem> items) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(20, 10, 20, 8),
+      padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -766,9 +767,21 @@ class _HomeScreenState extends State<HomeScreen> {
             title,
             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
           ),
-          const Text(
-            'Vedi tutti',
-            style: TextStyle(fontSize: 12, color: Color(0xFF888888)),
+          GestureDetector(
+            onTap: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ListScreen(
+                  title: title,
+                  items: items,
+                  hiveService: widget.hiveService,
+                ),
+              ),
+            ),
+            child: const Text(
+              'Vedi tutti',
+              style: TextStyle(fontSize: 12, color: Color(0xFF888888)),
+            ),
           ),
         ],
       ),
