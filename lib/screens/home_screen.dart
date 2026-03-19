@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:movie_list/screens/form_screen.dart';
 import 'package:movie_list/screens/list_screen.dart';
 import 'package:movie_list/screens/media_screen.dart';
+import 'package:movie_list/services/csv_service.dart';
 import 'package:movie_list/services/hive_services.dart';
 import 'package:movie_list/models/media_item.dart';
+import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 
 class HomeScreen extends StatefulWidget {
   final HiveService hiveService;
@@ -15,6 +17,8 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
+  final CsvService _csvService = CsvService();
+
   TypeOfMedia? _selectedCategory;
   String? _genreOne;
   String? _genreTwo;
@@ -325,10 +329,10 @@ class _HomeScreenState extends State<HomeScreen> {
               'Ultimi aggiunti',
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
             ),
-            Text(
-              'Vedi tutti',
-              style: TextStyle(fontSize: 12, color: Color(0xFF888888)),
-            ),
+            // Text(
+            //   'Vedi tutti',
+            //   style: TextStyle(fontSize: 12, color: Color(0xFF888888)),
+            // ),
           ],
         ),
       ),
@@ -673,8 +677,41 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Widget> _buildCategoryView() {
     if (_selectedCategory == TypeOfMedia.film) {
       return [
+        GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ListScreen(
+                title: 'Tutti i film',
+                items: _mediaItems
+                    .where((item) => item.typeOfMedia == TypeOfMedia.film)
+                    .toList(),
+                hiveService: widget.hiveService,
+              ),
+            ),
+          ),
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF1e1e3a),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFF3C3489), width: 1),
+            ),
+            child: Center(
+              child: Text(
+                'Vedi tutti i film (${_mediaItems.where((item) => item.typeOfMedia == TypeOfMedia.film).length})',
+                style: const TextStyle(fontSize: 13, color: Color(0xFFCECBF6)),
+              ),
+            ),
+          ),
+        ),
         if (_lastFilms.isNotEmpty) ...[
-          _sectionHeader('Ultimi film aggiunti', _lastFilms),
+          _sectionHeader(
+            'Ultimi film aggiunti',
+            _lastFilms,
+            showViewAll: false,
+          ),
           _cardRow(_lastFilms),
         ],
         if (_filmsToWatch.isNotEmpty) ...[
@@ -698,8 +735,41 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (_selectedCategory == TypeOfMedia.serie) {
       return [
+        GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ListScreen(
+                title: 'Tutte le serie',
+                items: _mediaItems
+                    .where((item) => item.typeOfMedia == TypeOfMedia.serie)
+                    .toList(),
+                hiveService: widget.hiveService,
+              ),
+            ),
+          ),
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF0a2a22),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFF085041), width: 1),
+            ),
+            child: Center(
+              child: Text(
+                'Vedi tutte le serie (${_mediaItems.where((item) => item.typeOfMedia == TypeOfMedia.serie).length})',
+                style: const TextStyle(fontSize: 13, color: Color(0xFF9FE1CB)),
+              ),
+            ),
+          ),
+        ),
         if (_lastSeries.isNotEmpty) ...[
-          _sectionHeader('Ultime serie aggiunte', _lastSeries),
+          _sectionHeader(
+            'Ultime serie aggiunte',
+            _lastSeries,
+            showViewAll: false,
+          ),
           _cardRow(_lastSeries),
         ],
         if (_continueWatchingSeries.isNotEmpty) ...[
@@ -727,8 +797,41 @@ class _HomeScreenState extends State<HomeScreen> {
 
     if (_selectedCategory == TypeOfMedia.anime) {
       return [
+        GestureDetector(
+          onTap: () => Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ListScreen(
+                title: 'Tutti gli Anime',
+                items: _mediaItems
+                    .where((item) => item.typeOfMedia == TypeOfMedia.anime)
+                    .toList(),
+                hiveService: widget.hiveService,
+              ),
+            ),
+          ),
+          child: Container(
+            margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+            padding: const EdgeInsets.symmetric(vertical: 10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF2a1208),
+              borderRadius: BorderRadius.circular(8),
+              border: Border.all(color: const Color(0xFF993C1D), width: 1),
+            ),
+            child: Center(
+              child: Text(
+                'Vedi tutti gli anime (${_mediaItems.where((item) => item.typeOfMedia == TypeOfMedia.anime).length})',
+                style: const TextStyle(fontSize: 13, color: Color(0xFFF5C4B3)),
+              ),
+            ),
+          ),
+        ),
         if (_lastAnime.isNotEmpty) ...[
-          _sectionHeader('Ultimi anime aggiunti', _lastAnime),
+          _sectionHeader(
+            'Ultimi anime aggiunti',
+            _lastAnime,
+            showViewAll: false,
+          ),
           _cardRow(_lastAnime),
         ],
         if (_continueWatchingAnime.isNotEmpty) ...[
@@ -757,7 +860,11 @@ class _HomeScreenState extends State<HomeScreen> {
     return [];
   }
 
-  Widget _sectionHeader(String title, List<MediaItem> items) {
+  Widget _sectionHeader(
+    String title,
+    List<MediaItem> items, {
+    bool showViewAll = true,
+  }) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 8, 20, 8),
       child: Row(
@@ -767,22 +874,23 @@ class _HomeScreenState extends State<HomeScreen> {
             title,
             style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
           ),
-          GestureDetector(
-            onTap: () => Navigator.push(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ListScreen(
-                  title: title,
-                  items: items,
-                  hiveService: widget.hiveService,
+          if (showViewAll)
+            GestureDetector(
+              onTap: () => Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => ListScreen(
+                    title: title,
+                    items: items,
+                    hiveService: widget.hiveService,
+                  ),
                 ),
               ),
+              child: const Text(
+                'Vedi tutti',
+                style: TextStyle(fontSize: 12, color: Color(0xFF888888)),
+              ),
             ),
-            child: const Text(
-              'Vedi tutti',
-              style: TextStyle(fontSize: 12, color: Color(0xFF888888)),
-            ),
-          ),
         ],
       ),
     );
@@ -1018,17 +1126,55 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async {
-          await Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => FormScreen(hiveService: widget.hiveService),
-            ),
-          );
-          _loadMediaItems();
-        },
-        child: const Icon(Icons.add),
+      floatingActionButton: SpeedDial(
+        icon: Icons.add,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        activeIcon: Icons.close,
+        backgroundColor: const Color(0xFF3C3489),
+        foregroundColor: const Color(0xFFCECBF6),
+        activeBackgroundColor: const Color(0xFF1e1e3a),
+        elevation: 0,
+        spacing: 12,
+        spaceBetweenChildren: 8,
+        children: [
+          SpeedDialChild(
+            child: const Icon(Icons.add, color: Color(0xFFCECBF6)),
+            label: 'Aggiungi manualmente',
+            backgroundColor: const Color(0xFF3C3489),
+            elevation: 0,
+            labelStyle: const TextStyle(color: Colors.white, fontSize: 13),
+            labelBackgroundColor: const Color(0xFF2a2a2a),
+            onTap: () async {
+              await Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) =>
+                      FormScreen(hiveService: widget.hiveService),
+                ),
+              );
+              _loadMediaItems();
+            },
+          ),
+          SpeedDialChild(
+            child: const Icon(Icons.file_upload, color: Color(0xFFCECBF6)),
+            label: 'Importa CSV',
+            backgroundColor: const Color(0xFF3C3489),
+            elevation: 0,
+            labelStyle: const TextStyle(color: Colors.white, fontSize: 13),
+            labelBackgroundColor: const Color(0xFF2a2a2a),
+            onTap: () async {
+              final items = await _csvService.importCsv();
+              for (final item in items) {
+                await widget.hiveService.addMediaItem(item);
+              }
+              _loadMediaItems();
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('${items.length} titoli importati!')),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
