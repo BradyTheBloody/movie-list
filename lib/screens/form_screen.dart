@@ -24,6 +24,7 @@ class _FormScreenState extends State<FormScreen> {
       _plotController.text = widget.mediaItem!.plot ?? '';
       _coverController.text = widget.mediaItem!.cover ?? '';
       _commentController.text = widget.mediaItem!.comment ?? '';
+      _trailerController.text = widget.mediaItem!.trailer ?? '';
       _durationController.text = widget.mediaItem!.duration?.toString() ?? '';
       _seasonsController.text = widget.mediaItem!.seasons?.toString() ?? '';
       _episodesController.text = widget.mediaItem!.episodes?.toString() ?? '';
@@ -228,7 +229,9 @@ class _FormScreenState extends State<FormScreen> {
                       final DateTime? picked = await showDatePicker(
                         context: context,
                         firstDate: DateTime(1900),
-                        lastDate: DateTime.now(),
+                        lastDate: DateTime.now().add(
+                          const Duration(days: 365 * 5),
+                        ),
                       );
                       if (picked != null) {
                         setState(

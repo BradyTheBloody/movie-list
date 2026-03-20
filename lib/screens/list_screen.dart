@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:movie_list/models/media_item.dart';
 import 'package:movie_list/screens/media_screen.dart';
 import 'package:movie_list/services/hive_services.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class ListScreen extends StatelessWidget {
   final String title;
@@ -17,19 +18,21 @@ class ListScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final sortedItems = List<MediaItem>.from(items)
+      ..sort((a, b) => a.title.compareTo(b.title));
     return Scaffold(
       appBar: AppBar(title: Text(title)),
       body: GridView.builder(
         padding: const EdgeInsets.all(16),
         gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
           crossAxisCount: 3,
-          crossAxisSpacing: 10,
-          mainAxisSpacing: 10,
+          crossAxisSpacing: 20,
+          mainAxisSpacing: 15,
           childAspectRatio: 100 / 175,
         ),
-        itemCount: items.length,
+        itemCount: sortedItems.length,
         itemBuilder: (context, index) {
-          final item = items[index];
+          final item = sortedItems[index];
           return GestureDetector(
             onTap: () => Navigator.push(
               context,
@@ -47,12 +50,22 @@ class ListScreen extends StatelessWidget {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: item.cover != null && item.cover!.isNotEmpty
-                            ? Image.network(
-                                item.cover!,
-                                width: double.infinity,
+                            ? CachedNetworkImage(
+                                imageUrl: item.cover!,
+                                width: 100,
+                                height: 148,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    Container(color: const Color(0xFF1E1E1E)),
+                                errorWidget: (context, error, stackTrace) =>
+                                    Container(
+                                      width: 100,
+                                      height: 148,
+                                      color: const Color(0xFF1E1E1E),
+                                    ),
+                                placeholder: (context, url) => Container(
+                                  width: 100,
+                                  height: 148,
+                                  color: const Color(0xFF1a1a1a),
+                                ),
                               )
                             : Container(color: const Color(0xFF1E1E1E)),
                       ),

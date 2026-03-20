@@ -20,6 +20,13 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final CsvService _csvService = CsvService();
 
+  bool _isSearching = false;
+  String _searchQuery = '';
+  final TextEditingController _searchController = TextEditingController();
+  String? _filterGenre;
+  String? _filterStar;
+  String? _filterDirector;
+
   TypeOfMedia? _selectedCategory;
   String? _genreOne;
   String? _genreTwo;
@@ -43,6 +50,43 @@ class _HomeScreenState extends State<HomeScreen> {
             item.watchedUntilEpisode! < item.episodes!,
       )
       .toList();
+
+  //Coming Soon lists
+  List<MediaItem> get _comingSoon => _mediaItems
+      .where(
+        (item) =>
+            item.releaseDate != null &&
+            item.releaseDate!.isAfter(DateTime.now()),
+      )
+      .toList();
+
+  List<MediaItem> get _comingSoonFilms => _mediaItems
+      .where(
+        (item) =>
+            item.typeOfMedia == TypeOfMedia.film &&
+            item.releaseDate != null &&
+            item.releaseDate!.isAfter(DateTime.now()),
+      )
+      .toList();
+
+  List<MediaItem> get _comingSoonSeries => _mediaItems
+      .where(
+        (item) =>
+            item.typeOfMedia == TypeOfMedia.serie &&
+            item.releaseDate != null &&
+            item.releaseDate!.isAfter(DateTime.now()),
+      )
+      .toList();
+
+  List<MediaItem> get _comingSoonAnime => _mediaItems
+      .where(
+        (item) =>
+            item.typeOfMedia == TypeOfMedia.anime &&
+            item.releaseDate != null &&
+            item.releaseDate!.isAfter(DateTime.now()),
+      )
+      .toList();
+  // END COMING SOON LISTS
 
   // GETTER SCREEN FILM
   List<MediaItem> get _lastFilms => _mediaItems
@@ -185,6 +229,33 @@ class _HomeScreenState extends State<HomeScreen> {
       .toList();
   // END GETTER ANIME
 
+  // GETTER SEARCH
+  List<MediaItem> get _searchResults => _mediaItems.where((item) {
+    final query = _searchQuery.toLowerCase();
+    final matchesQuery =
+        query.isEmpty ||
+        item.title.toLowerCase().contains(query) ||
+        item.originalTitle.toLowerCase().contains(query) ||
+        (item.director?.toLowerCase().contains(query) ?? false) ||
+        item.genre.any((g) => g.toLowerCase().contains(query)) ||
+        (item.star?.any((s) => s.toLowerCase().contains(query)) ?? false);
+
+    final matchesGenre =
+        _filterGenre == null || item.genre.contains(_filterGenre);
+    final matchesStar =
+        _filterStar == null || (item.star?.contains(_filterStar) ?? false);
+    final matchesDirector =
+        _filterDirector == null || item.director == _filterDirector;
+
+    return matchesQuery && matchesGenre && matchesStar && matchesDirector;
+  }).toList();
+  // END GETTER SEARCH
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+  }
+
   @override
   void initState() {
     super.initState();
@@ -201,6 +272,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _continueWatchingRow(List<MediaItem> items) {
+    final reversedItems = items.reversed.toList();
     return Column(
       children: [
         SizedBox(
@@ -208,9 +280,9 @@ class _HomeScreenState extends State<HomeScreen> {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: items.length,
+            itemCount: reversedItems.length,
             itemBuilder: (context, index) {
-              final item = items[index];
+              final item = reversedItems[index];
               return GestureDetector(
                 onTap: () async {
                   await Navigator.push(
@@ -330,10 +402,6 @@ class _HomeScreenState extends State<HomeScreen> {
               'Ultimi aggiunti',
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
             ),
-            // Text(
-            //   'Vedi tutti',
-            //   style: TextStyle(fontSize: 12, color: Color(0xFF888888)),
-            // ),
           ],
         ),
       ),
@@ -455,110 +523,10 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       // CONTINUA A GUARDARE
       if (_continueWatching.isNotEmpty)
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Continua a guardare',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-              ),
-              Text(
-                'Vedi tutti',
-                style: TextStyle(fontSize: 12, color: Color(0xFF888888)),
-              ),
-            ],
-          ),
-        ),
-      if (_continueWatching.isNotEmpty)
-        SizedBox(
-          height: 65,
-          child: ListView.builder(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: _continueWatching.length,
-            itemBuilder: (context, index) {
-              final item = _continueWatching[index];
-              return GestureDetector(
-                onTap: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MediaScreen(
-                        mediaItem: item,
-                        hiveService: widget.hiveService,
-                      ),
-                    ),
-                  );
-                  _loadMediaItems();
-                },
-                child: Container(
-                  width: 140,
-                  margin: const EdgeInsets.only(right: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1A1A1A),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Padding(
-                    padding: const EdgeInsets.all(10),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          item.title,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                          ),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        Text(
-                          'S${item.seasons} · Ep ${item.watchedUntilEpisode} di ${item.episodes}',
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Color(0xFF666666),
-                          ),
-                        ),
-                        const Spacer(),
-                        ClipRRect(
-                          borderRadius: BorderRadius.circular(2),
-                          child: LinearProgressIndicator(
-                            value: item.watchedUntilEpisode! / item.episodes!,
-                            backgroundColor: const Color(0xFF333333),
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              const Color(0xFF5DCAA5),
-                            ),
-                            minHeight: 3,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
-      if (_toWatchList.isNotEmpty)
-        Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Da guardare',
-                style: TextStyle(fontSize: 15, fontWeight: FontWeight.w500),
-              ),
-              Text(
-                'Vedi tutti',
-                style: TextStyle(fontSize: 12, color: Color(0xFF888888)),
-              ),
-            ],
-          ),
-        ),
+        _sectionHeader('Continua a guardare', _continueWatching),
+      if (_continueWatching.isNotEmpty) _continueWatchingRow(_continueWatching),
       // DA GUARDARE
+      if (_toWatchList.isNotEmpty) _sectionHeader('Da guardare', _toWatchList),
       if (_toWatchList.isNotEmpty)
         SizedBox(
           height: 195,
@@ -680,6 +648,8 @@ class _HomeScreenState extends State<HomeScreen> {
             },
           ),
         ),
+      if (_comingSoon.isNotEmpty) _sectionHeader('In arrivo', _comingSoon),
+      if (_comingSoon.isNotEmpty) _cardRow(_comingSoon),
     ];
   }
 
@@ -739,6 +709,10 @@ class _HomeScreenState extends State<HomeScreen> {
         if (_genreTwo != null && _filmsByGenreTwo.isNotEmpty) ...[
           _sectionHeader('Film $_genreTwo', _filmsByGenreTwo),
           _cardRow(_filmsByGenreTwo),
+        ],
+        if (_comingSoonFilms.isNotEmpty) ...[
+          _sectionHeader('Film in arrivo', _comingSoonFilms),
+          _cardRow(_comingSoonFilms),
         ],
       ];
     }
@@ -802,6 +776,10 @@ class _HomeScreenState extends State<HomeScreen> {
           _sectionHeader('Serie $_serieGenreTwo', _seriesByGenreTwo),
           _cardRow(_seriesByGenreTwo),
         ],
+        if (_comingSoonSeries.isNotEmpty) ...[
+          _sectionHeader('Serie in arrivo', _comingSoonSeries),
+          _cardRow(_comingSoonSeries),
+        ],
       ];
     }
 
@@ -864,10 +842,257 @@ class _HomeScreenState extends State<HomeScreen> {
           _sectionHeader('Anime $_animeGenreTwo', _animeByGenreTwo),
           _cardRow(_animeByGenreTwo),
         ],
+        if (_comingSoonAnime.isNotEmpty) ...[
+          _sectionHeader('Anime in arrivo', _comingSoonAnime),
+          _cardRow(_comingSoonAnime),
+        ],
       ];
     }
 
     return [];
+  }
+
+  List<Widget> _buildSearchView() {
+    // raccolgo tutti i generi, star e registi unici
+    final allGenres =
+        _mediaItems.expand((item) => item.genre).toSet().toList().cast<String>()
+          ..sort();
+    final allStars =
+        _mediaItems
+            .expand((item) => item.star ?? [])
+            .toSet()
+            .toList()
+            .cast<String>()
+          ..sort();
+    final allDirectors =
+        _mediaItems
+            .map((item) => item.director)
+            .whereType<String>()
+            .toSet()
+            .toList()
+          ..sort();
+
+    return [
+      // FILTRI
+      Padding(
+        padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
+        child: SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          child: Row(
+            children: [
+              // filtro genere
+              _filterChip(
+                'Genere',
+                _filterGenre,
+                allGenres,
+                (val) => setState(() => _filterGenre = val),
+              ),
+              const SizedBox(width: 8),
+              // filtro star
+              _filterChip(
+                'Attore',
+                _filterStar,
+                allStars,
+                (val) => setState(() => _filterStar = val),
+              ),
+              const SizedBox(width: 8),
+              // filtro regista
+              _filterChip(
+                'Regista',
+                _filterDirector,
+                allDirectors,
+                (val) => setState(() => _filterDirector = val),
+              ),
+            ],
+          ),
+        ),
+      ),
+
+      // RISULTATI
+      if (_searchResults.isEmpty)
+        const Padding(
+          padding: EdgeInsets.all(32),
+          child: Center(
+            child: Text(
+              'Nessun risultato',
+              style: TextStyle(color: Color(0xFF666666)),
+            ),
+          ),
+        )
+      else
+        GridView.builder(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          padding: const EdgeInsets.all(16),
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            crossAxisSpacing: 10,
+            mainAxisSpacing: 10,
+            childAspectRatio: 100 / 175,
+          ),
+          itemCount: _searchResults.length,
+          itemBuilder: (context, index) {
+            final item = _searchResults[index];
+            return GestureDetector(
+              onTap: () async {
+                await Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => MediaScreen(
+                      mediaItem: item,
+                      hiveService: widget.hiveService,
+                    ),
+                  ),
+                );
+                _loadMediaItems();
+              },
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Stack(
+                      children: [
+                        ClipRRect(
+                          borderRadius: BorderRadius.circular(8),
+                          child: item.cover != null && item.cover!.isNotEmpty
+                              ? CachedNetworkImage(
+                                  imageUrl: item.cover!,
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  errorWidget: (context, url, error) =>
+                                      Container(color: const Color(0xFF1E1E1E)),
+                                  placeholder: (context, url) =>
+                                      Container(color: const Color(0xFF1a1a1a)),
+                                )
+                              : Container(color: const Color(0xFF1E1E1E)),
+                        ),
+                        Positioned(
+                          top: 6,
+                          left: 6,
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 6,
+                              vertical: 2,
+                            ),
+                            decoration: BoxDecoration(
+                              color: switch (item.typeOfMedia) {
+                                TypeOfMedia.film => const Color(0xFF3C3489),
+                                TypeOfMedia.serie => const Color(0xFF085041),
+                                TypeOfMedia.anime => const Color(0xFF993C1D),
+                              },
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(
+                              switch (item.typeOfMedia) {
+                                TypeOfMedia.film => 'Film',
+                                TypeOfMedia.serie => 'Serie',
+                                TypeOfMedia.anime => 'Anime',
+                              },
+                              style: TextStyle(
+                                fontSize: 9,
+                                color: switch (item.typeOfMedia) {
+                                  TypeOfMedia.film => const Color(0xFFCECBF6),
+                                  TypeOfMedia.serie => const Color(0xFF9FE1CB),
+                                  TypeOfMedia.anime => const Color(0xFFF5C4B3),
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    item.title,
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFFCCCCCC),
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  Text(
+                    item.releaseDate != null
+                        ? item.releaseDate!.year.toString()
+                        : '',
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: Color(0xFF666666),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+    ];
+  }
+
+  Widget _filterChip(
+    String label,
+    String? selectedValue,
+    List<String> options,
+    Function(String?) onSelected,
+  ) {
+    return GestureDetector(
+      onTap: () async {
+        final selected = await showModalBottomSheet<String>(
+          context: context,
+          backgroundColor: const Color(0xFF1a1a1a),
+          builder: (context) => ListView(
+            children: [
+              ListTile(
+                title: const Text(
+                  'Tutti',
+                  style: TextStyle(color: Colors.white),
+                ),
+                onTap: () => Navigator.pop(context, null),
+              ),
+              ...options.map(
+                (option) => ListTile(
+                  title: Text(
+                    option,
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                  trailing: selectedValue == option
+                      ? const Icon(Icons.check, color: Color(0xFF3C3489))
+                      : null,
+                  onTap: () => Navigator.pop(context, option),
+                ),
+              ),
+            ],
+          ),
+        );
+        if (selected != null || selectedValue != null) {
+          onSelected(selected);
+        }
+      },
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: selectedValue != null
+              ? const Color(0xFF1e1e3a)
+              : const Color(0xFF111111),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: selectedValue != null
+                ? const Color(0xFF3C3489)
+                : const Color(0xFF2a2a2a),
+            width: 1,
+          ),
+        ),
+        child: Text(
+          selectedValue ?? label,
+          style: TextStyle(
+            fontSize: 12,
+            color: selectedValue != null
+                ? const Color(0xFFCECBF6)
+                : const Color(0xFF666666),
+          ),
+        ),
+      ),
+    );
   }
 
   Widget _sectionHeader(
@@ -1033,73 +1258,93 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 8,
-                ),
-                // CHIPS
-                child: Row(
-                  children: [
-                    GestureDetector(
-                      onTap: () => setState(() => _selectedCategory = null),
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
-                        ),
-                        margin: const EdgeInsets.only(right: 8),
-                        decoration: BoxDecoration(
-                          color: _selectedCategory == null
-                              ? const Color(0xFF333333)
-                              : const Color(0xFF111111),
-                          borderRadius: BorderRadius.circular(20),
-                          border: Border.all(
-                            color: _selectedCategory == null
-                                ? const Color(0xFF888888)
-                                : const Color(0xFF2a2a2a),
-                            width: 1,
-                          ),
-                        ),
-                        child: Text(
-                          'Tutti',
-                          style: TextStyle(
-                            fontSize: 14,
-                            color: _selectedCategory == null
-                                ? Colors.white
-                                : const Color(0xFF666666),
-                          ),
-                        ),
+              // BARRA DI RICERCA
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                child: GestureDetector(
+                  onTap: () => setState(() => _isSearching = true),
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF1a1a1a),
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                        color: _isSearching
+                            ? const Color(0xFF3C3489)
+                            : const Color(0xFF2a2a2a),
+                        width: 1,
                       ),
                     ),
-                    ...TypeOfMedia.values.map((type) {
-                      final isSelected = _selectedCategory == type;
-                      final colors = {
-                        TypeOfMedia.film: (
-                          const Color(0xFF1e1e3a),
-                          const Color(0xFFCECBF6),
-                          const Color(0xFF3C3489),
+                    child: Row(
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.symmetric(horizontal: 12),
+                          child: Icon(
+                            Icons.search,
+                            color: Color(0xFF666666),
+                            size: 18,
+                          ),
                         ),
-                        TypeOfMedia.serie: (
-                          const Color(0xFF0a2a22),
-                          const Color(0xFF9FE1CB),
-                          const Color(0xFF085041),
+                        Expanded(
+                          child: TextField(
+                            controller: _searchController,
+                            style: const TextStyle(
+                              fontSize: 13,
+                              color: Colors.white,
+                            ),
+                            decoration: const InputDecoration(
+                              hintText: 'Cerca titolo, regista, genere...',
+                              hintStyle: TextStyle(
+                                color: Color(0xFF555555),
+                                fontSize: 13,
+                              ),
+                              border: InputBorder.none,
+                              isDense: true,
+                              contentPadding: EdgeInsets.symmetric(
+                                vertical: 10,
+                              ),
+                            ),
+                            onChanged: (value) =>
+                                setState(() => _searchQuery = value),
+                            onTap: () => setState(() => _isSearching = true),
+                          ),
                         ),
-                        TypeOfMedia.anime: (
-                          const Color(0xFF2a1208),
-                          const Color(0xFFF5C4B3),
-                          const Color(0xFF993C1D),
-                        ),
-                      };
-                      final (bg, text, border) = colors[type]!;
-                      final label = switch (type) {
-                        TypeOfMedia.film => 'Film',
-                        TypeOfMedia.serie => 'Serie',
-                        TypeOfMedia.anime => 'Anime',
-                      };
-                      return GestureDetector(
-                        onTap: () => setState(() => _selectedCategory = type),
+                        if (_isSearching)
+                          GestureDetector(
+                            onTap: () => setState(() {
+                              _isSearching = false;
+                              _searchQuery = '';
+                              _searchController.clear();
+                              _filterGenre = null;
+                              _filterStar = null;
+                              _filterDirector = null;
+                            }),
+                            child: const Padding(
+                              padding: EdgeInsets.symmetric(horizontal: 12),
+                              child: Icon(
+                                Icons.close,
+                                color: Color(0xFF666666),
+                                size: 18,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+              if (!_isSearching)
+                SingleChildScrollView(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 8,
+                  ),
+                  // CHIPS
+                  child: Row(
+                    children: [
+                      GestureDetector(
+                        onTap: () => setState(() => _selectedCategory = null),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -1107,35 +1352,92 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           margin: const EdgeInsets.only(right: 8),
                           decoration: BoxDecoration(
-                            color: isSelected ? bg : const Color(0xFF111111),
+                            color: _selectedCategory == null
+                                ? const Color(0xFF333333)
+                                : const Color(0xFF111111),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
-                              color: isSelected
-                                  ? border
+                              color: _selectedCategory == null
+                                  ? const Color(0xFF888888)
                                   : const Color(0xFF2a2a2a),
                               width: 1,
                             ),
                           ),
                           child: Text(
-                            label,
+                            'Tutti',
                             style: TextStyle(
                               fontSize: 14,
-                              color: isSelected
-                                  ? text
+                              color: _selectedCategory == null
+                                  ? Colors.white
                                   : const Color(0xFF666666),
                             ),
                           ),
                         ),
-                      );
-                    }),
-                  ],
+                      ),
+                      ...TypeOfMedia.values.map((type) {
+                        final isSelected = _selectedCategory == type;
+                        final colors = {
+                          TypeOfMedia.film: (
+                            const Color(0xFF1e1e3a),
+                            const Color(0xFFCECBF6),
+                            const Color(0xFF3C3489),
+                          ),
+                          TypeOfMedia.serie: (
+                            const Color(0xFF0a2a22),
+                            const Color(0xFF9FE1CB),
+                            const Color(0xFF085041),
+                          ),
+                          TypeOfMedia.anime: (
+                            const Color(0xFF2a1208),
+                            const Color(0xFFF5C4B3),
+                            const Color(0xFF993C1D),
+                          ),
+                        };
+                        final (bg, text, border) = colors[type]!;
+                        final label = switch (type) {
+                          TypeOfMedia.film => 'Film',
+                          TypeOfMedia.serie => 'Serie',
+                          TypeOfMedia.anime => 'Anime',
+                        };
+                        return GestureDetector(
+                          onTap: () => setState(() => _selectedCategory = type),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            margin: const EdgeInsets.only(right: 8),
+                            decoration: BoxDecoration(
+                              color: isSelected ? bg : const Color(0xFF111111),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: isSelected
+                                    ? border
+                                    : const Color(0xFF2a2a2a),
+                                width: 1,
+                              ),
+                            ),
+                            child: Text(
+                              label,
+                              style: TextStyle(
+                                fontSize: 14,
+                                color: isSelected
+                                    ? text
+                                    : const Color(0xFF666666),
+                              ),
+                            ),
+                          ),
+                        );
+                      }),
+                    ],
+                  ),
                 ),
-              ),
-              if (_selectedCategory == null)
+              if (_isSearching)
+                ..._buildSearchView()
+              else if (_selectedCategory == null)
                 ..._buildHomeView()
               else
                 ..._buildCategoryView(),
-
               // ULTIMI AGGIUNTI
             ],
           ),

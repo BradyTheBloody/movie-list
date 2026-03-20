@@ -20,6 +20,44 @@ class MediaScreen extends StatefulWidget {
   State<MediaScreen> createState() => _MediaScreenState();
 }
 
+void _showCoverDialog(BuildContext context, String coverUrl) {
+  showDialog(
+    context: context,
+    builder: (context) => Dialog(
+      backgroundColor: Colors.transparent,
+      child: Stack(
+        alignment: Alignment.topRight,
+        children: [
+          ClipRRect(
+            borderRadius: BorderRadius.circular(12),
+            child: CachedNetworkImage(
+              imageUrl: coverUrl,
+              fit: BoxFit.contain,
+              placeholder: (context, url) =>
+                  Container(color: const Color(0xFF1a1a1a), height: 300),
+              errorWidget: (context, url, error) =>
+                  Container(color: const Color(0xFF1E1E1E), height: 300),
+            ),
+          ),
+          GestureDetector(
+            onTap: () => Navigator.pop(context),
+            child: Container(
+              margin: const EdgeInsets.all(8),
+              width: 30,
+              height: 30,
+              decoration: BoxDecoration(
+                color: Colors.black54,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: const Icon(Icons.close, color: Colors.white, size: 18),
+            ),
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
 class _MediaScreenState extends State<MediaScreen> {
   String? _getYoutubeId(String? url) {
     if (url == null || url.isEmpty) return null;
@@ -106,32 +144,42 @@ class _MediaScreenState extends State<MediaScreen> {
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(8),
-                      child:
+                    GestureDetector(
+                      onTap:
                           widget.mediaItem.cover != null &&
                               widget.mediaItem.cover!.isNotEmpty
-                          ? CachedNetworkImage(
-                              imageUrl: widget.mediaItem.cover!,
-                              width: 100,
-                              height: 148,
-                              fit: BoxFit.cover,
-                              errorWidget: (context, url, error) => Container(
+                          ? () => _showCoverDialog(
+                              context,
+                              widget.mediaItem.cover!,
+                            )
+                          : null,
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child:
+                            widget.mediaItem.cover != null &&
+                                widget.mediaItem.cover!.isNotEmpty
+                            ? CachedNetworkImage(
+                                imageUrl: widget.mediaItem.cover!,
+                                width: 100,
+                                height: 148,
+                                fit: BoxFit.cover,
+                                errorWidget: (context, url, error) => Container(
+                                  width: 100,
+                                  height: 148,
+                                  color: const Color(0xFF1E1E1E),
+                                ),
+                                placeholder: (context, url) => Container(
+                                  width: 100,
+                                  height: 148,
+                                  color: const Color(0xFF1a1a1a),
+                                ),
+                              )
+                            : Container(
                                 width: 100,
                                 height: 148,
                                 color: const Color(0xFF1E1E1E),
                               ),
-                              placeholder: (context, url) => Container(
-                                width: 100,
-                                height: 148,
-                                color: const Color(0xFF1a1a1a),
-                              ),
-                            )
-                          : Container(
-                              width: 100,
-                              height: 148,
-                              color: const Color(0xFF1E1E1E),
-                            ),
+                      ),
                     ),
                     const SizedBox(width: 14),
                     Expanded(
