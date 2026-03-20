@@ -6,6 +6,7 @@ import 'package:movie_list/services/csv_service.dart';
 import 'package:movie_list/services/hive_services.dart';
 import 'package:movie_list/models/media_item.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class HomeScreen extends StatefulWidget {
   final HiveService hiveService;
@@ -368,17 +369,22 @@ class _HomeScreenState extends State<HomeScreen> {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
                           child: item.cover != null && item.cover!.isNotEmpty
-                              ? Image.network(
-                                  item.cover!,
+                              ? CachedNetworkImage(
+                                  imageUrl: item.cover!,
                                   width: 100,
                                   height: 148,
                                   fit: BoxFit.cover,
-                                  errorBuilder: (context, error, stackTrace) =>
+                                  errorWidget: (context, error, stackTrace) =>
                                       Container(
                                         width: 100,
                                         height: 148,
                                         color: const Color(0xFF1E1E1E),
                                       ),
+                                  placeholder: (context, url) => Container(
+                                    width: 100,
+                                    height: 148,
+                                    color: const Color(0xFF1a1a1a),
+                                  ),
                                 )
                               : Container(
                                   width: 100,
@@ -586,18 +592,22 @@ class _HomeScreenState extends State<HomeScreen> {
                           ClipRRect(
                             borderRadius: BorderRadius.circular(8),
                             child: item.cover != null && item.cover!.isNotEmpty
-                                ? Image.network(
-                                    item.cover!,
+                                ? CachedNetworkImage(
+                                    imageUrl: item.cover!,
                                     width: 100,
                                     height: 148,
                                     fit: BoxFit.cover,
-                                    errorBuilder:
-                                        (context, error, stackTrace) =>
-                                            Container(
-                                              width: 100,
-                                              height: 148,
-                                              color: const Color(0xFF1E1E1E),
-                                            ),
+                                    errorWidget: (context, error, stackTrace) =>
+                                        Container(
+                                          width: 100,
+                                          height: 148,
+                                          color: const Color(0xFF1E1E1E),
+                                        ),
+                                    placeholder: (context, url) => Container(
+                                      width: 100,
+                                      height: 148,
+                                      color: const Color(0xFF1a1a1a),
+                                    ),
                                   )
                                 : Container(
                                     width: 100,
@@ -929,17 +939,22 @@ class _HomeScreenState extends State<HomeScreen> {
                       ClipRRect(
                         borderRadius: BorderRadius.circular(8),
                         child: item.cover != null && item.cover!.isNotEmpty
-                            ? Image.network(
-                                item.cover!,
+                            ? CachedNetworkImage(
+                                imageUrl: item.cover!,
                                 width: 100,
                                 height: 148,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
+                                errorWidget: (context, error, stackTrace) =>
                                     Container(
                                       width: 100,
                                       height: 148,
                                       color: const Color(0xFF1E1E1E),
                                     ),
+                                placeholder: (context, url) => Container(
+                                  width: 100,
+                                  height: 148,
+                                  color: const Color(0xFF1a1a1a),
+                                ),
                               )
                             : Container(
                                 width: 100,

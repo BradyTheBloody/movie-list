@@ -4,6 +4,7 @@ import 'package:movie_list/screens/form_screen.dart';
 import 'package:movie_list/services/hive_services.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 
 class MediaScreen extends StatefulWidget {
   final MediaItem mediaItem;
@@ -110,17 +111,21 @@ class _MediaScreenState extends State<MediaScreen> {
                       child:
                           widget.mediaItem.cover != null &&
                               widget.mediaItem.cover!.isNotEmpty
-                          ? Image.network(
-                              widget.mediaItem.cover!,
+                          ? CachedNetworkImage(
+                              imageUrl: widget.mediaItem.cover!,
                               width: 100,
                               height: 148,
                               fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) =>
-                                  Container(
-                                    width: 100,
-                                    height: 148,
-                                    color: const Color(0xFF1E1E1E),
-                                  ),
+                              errorWidget: (context, url, error) => Container(
+                                width: 100,
+                                height: 148,
+                                color: const Color(0xFF1E1E1E),
+                              ),
+                              placeholder: (context, url) => Container(
+                                width: 100,
+                                height: 148,
+                                color: const Color(0xFF1a1a1a),
+                              ),
                             )
                           : Container(
                               width: 100,
@@ -259,9 +264,14 @@ class _MediaScreenState extends State<MediaScreen> {
                             child: Stack(
                               fit: StackFit.expand,
                               children: [
-                                Image.network(
-                                  'https://img.youtube.com/vi/${_getYoutubeId(widget.mediaItem.trailer)}/hqdefault.jpg',
+                                CachedNetworkImage(
+                                  imageUrl:
+                                      'https://img.youtube.com/vi/${_getYoutubeId(widget.mediaItem.trailer)}/hqdefault.jpg',
                                   fit: BoxFit.cover,
+                                  errorWidget: (context, url, error) =>
+                                      Container(color: const Color(0xFF1E1E1E)),
+                                  placeholder: (context, url) =>
+                                      Container(color: const Color(0xFF1a1a1a)),
                                 ),
                                 Container(color: Colors.black26),
                                 const Center(
