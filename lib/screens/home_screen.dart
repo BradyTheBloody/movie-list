@@ -394,7 +394,7 @@ class _HomeScreenState extends State<HomeScreen> {
   List<Widget> _buildHomeView() {
     return [
       Padding(
-        padding: const EdgeInsets.all(20),
+        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
@@ -1253,6 +1253,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      appBar: AppBar(title: Text("Watch List")),
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
@@ -1265,6 +1266,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   onTap: () => setState(() => _isSearching = true),
                   child: AnimatedContainer(
                     duration: const Duration(milliseconds: 200),
+                    height: 42,
                     decoration: BoxDecoration(
                       color: const Color(0xFF1a1a1a),
                       borderRadius: BorderRadius.circular(20),
@@ -1293,16 +1295,16 @@ class _HomeScreenState extends State<HomeScreen> {
                               color: Colors.white,
                             ),
                             decoration: const InputDecoration(
-                              hintText: 'Cerca titolo, regista, genere...',
+                              hintText: 'Cerca per titolo, regista, genere...',
                               hintStyle: TextStyle(
                                 color: Color(0xFF555555),
                                 fontSize: 13,
                               ),
                               border: InputBorder.none,
+                              enabledBorder: InputBorder.none,
+                              focusedBorder: InputBorder.none,
                               isDense: true,
-                              contentPadding: EdgeInsets.symmetric(
-                                vertical: 10,
-                              ),
+                              contentPadding: EdgeInsets.zero,
                             ),
                             onChanged: (value) =>
                                 setState(() => _searchQuery = value),
