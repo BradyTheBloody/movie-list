@@ -3,6 +3,8 @@ import 'package:movie_list/models/media_item.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:movie_list/screens/home_screen.dart';
 import 'package:movie_list/services/hive_services.dart';
+import 'package:workmanager/workmanager.dart';
+import 'package:movie_list/services/backup_service.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -13,6 +15,30 @@ void main() async {
   final hiveService = HiveService();
   await hiveService.init();
   runApp(MainApp(hiveService: hiveService));
+  await Workmanager().initialize(callbackDispatcher);
+  await Workmanager().registerPeriodicTask(
+    'weeklyBackup',
+    'weeklyBackup',
+    frequency: const Duration(days: 7),
+    existingWorkPolicy: ExistingPeriodicWorkPolicy.keep,
+  );
+}
+
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    if (task == 'weeklyBackup') {
+      await Hive.initFlutter();
+      Hive.registerAdapter(TypeOfMediaAdapter());
+      Hive.registerAdapter(MediaStatusAdapter());
+      Hive.registerAdapter(MediaItemAdapter());
+      final box = await Hive.openBox<MediaItem>('mediaItems');
+      final items = box.values.toList();
+      final backupService = BackupService();
+      await backupService.createBackup(items);
+    }
+    return Future.value(true);
+  });
 }
 
 class MainApp extends StatelessWidget {

@@ -7,6 +7,7 @@ import 'package:movie_list/services/hive_services.dart';
 import 'package:movie_list/models/media_item.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:movie_list/services/backup_service.dart';
 
 class HomeScreen extends StatefulWidget {
   final HiveService hiveService;
@@ -977,17 +978,25 @@ class _HomeScreenState extends State<HomeScreen> {
                       children: [
                         ClipRRect(
                           borderRadius: BorderRadius.circular(8),
-                          child: item.cover != null && item.cover!.isNotEmpty
-                              ? CachedNetworkImage(
-                                  imageUrl: item.cover!,
-                                  width: double.infinity,
-                                  fit: BoxFit.cover,
-                                  errorWidget: (context, url, error) =>
-                                      Container(color: const Color(0xFF1E1E1E)),
-                                  placeholder: (context, url) =>
-                                      Container(color: const Color(0xFF1a1a1a)),
-                                )
-                              : Container(color: const Color(0xFF1E1E1E)),
+                          child: SizedBox(
+                            width: double.infinity,
+                            height: double.infinity,
+                            child: item.cover != null && item.cover!.isNotEmpty
+                                ? CachedNetworkImage(
+                                    imageUrl: item.cover!,
+                                    width: double.infinity,
+                                    height: double.infinity,
+                                    fit: BoxFit.cover,
+                                    errorWidget: (context, url, error) =>
+                                        Container(
+                                          color: const Color(0xFF1E1E1E),
+                                        ),
+                                    placeholder: (context, url) => Container(
+                                      color: const Color(0xFF1a1a1a),
+                                    ),
+                                  )
+                                : Container(color: const Color(0xFF1E1E1E)),
+                          ),
                         ),
                         Positioned(
                           top: 6,
@@ -1036,9 +1045,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    item.releaseDate != null
-                        ? item.releaseDate!.year.toString()
-                        : '',
+                    _buildYearRange(item),
                     style: const TextStyle(
                       fontSize: 10,
                       color: Color(0xFF666666),
@@ -1511,6 +1518,28 @@ class _HomeScreenState extends State<HomeScreen> {
               if (!mounted) return;
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(content: Text('${items.length} titoli importati!')),
+              );
+            },
+          ),
+          SpeedDialChild(
+            child: const Icon(Icons.backup, color: Color(0xFFCECBF6)),
+            label: 'Backup manuale',
+            backgroundColor: const Color(0xFF3C3489),
+            elevation: 0,
+            labelStyle: const TextStyle(color: Colors.white, fontSize: 13),
+            labelBackgroundColor: const Color(0xFF2a2a2a),
+            onTap: () async {
+              final backupService = BackupService();
+              final path = await backupService.createBackup(_mediaItems);
+              if (!mounted) return;
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    path != null
+                        ? 'Backup salvato in: $path'
+                        : 'Errore durante il backup',
+                  ),
+                ),
               );
             },
           ),
