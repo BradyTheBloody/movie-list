@@ -22,6 +22,35 @@ class ListScreen extends StatefulWidget {
 
 class _ListScreenState extends State<ListScreen> {
   late List<MediaItem> _items;
+  String _sortBy = 'titolo'; // 'titolo', 'voto', 'anno'
+  bool _sortAscending = true;
+
+  void _sortItems() {
+    setState(() {
+      switch (_sortBy) {
+        case 'titolo':
+          _items.sort(
+            (a, b) => _sortAscending
+                ? a.title.compareTo(b.title)
+                : b.title.compareTo(a.title),
+          );
+        case 'voto':
+          _items.sort(
+            (a, b) => _sortAscending
+                ? a.rating.compareTo(b.rating)
+                : b.rating.compareTo(a.rating),
+          );
+        case 'anno':
+          _items.sort((a, b) {
+            final aYear = a.releaseDate?.year ?? 0;
+            final bYear = b.releaseDate?.year ?? 0;
+            return _sortAscending
+                ? aYear.compareTo(bYear)
+                : bYear.compareTo(aYear);
+          });
+      }
+    });
+  }
 
   @override
   void initState() {
@@ -43,7 +72,28 @@ class _ListScreenState extends State<ListScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
+      appBar: AppBar(
+        title: Text(widget.title),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.sort),
+            onSelected: (value) {
+              if (_sortBy == value) {
+                _sortAscending = !_sortAscending;
+              } else {
+                _sortBy = value;
+                _sortAscending = true;
+              }
+              _sortItems();
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(value: 'titolo', child: Text('Titolo')),
+              const PopupMenuItem(value: 'voto', child: Text('Voto')),
+              const PopupMenuItem(value: 'anno', child: Text('Anno')),
+            ],
+          ),
+        ],
+      ),
       body: _items.isEmpty
           ? const Center(
               child: Text(
