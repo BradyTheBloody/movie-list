@@ -41,15 +41,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
   List<MediaItem> get _lastAdded => _mediaItems.reversed.take(10).toList();
 
-  List<MediaItem> get _continueWatching => _mediaItems
-      .where(
-        (item) =>
-            item.typeOfMedia != TypeOfMedia.film &&
-            item.episodes != null &&
-            item.watchedUntilEpisode != null &&
-            item.watchedUntilEpisode! < item.episodes!,
-      )
-      .toList();
+  List<MediaItem> get _continueWatching =>
+      _mediaItems
+          .where(
+            (item) =>
+                item.typeOfMedia != TypeOfMedia.film &&
+                item.episodes != null &&
+                item.watchedUntilEpisode != null &&
+                item.watchedUntilEpisode! < item.episodes!,
+          )
+          .toList()
+        ..sort((a, b) {
+          final aDate = a.lastModified ?? DateTime(0);
+          final bDate = b.lastModified ?? DateTime(0);
+          return bDate.compareTo(aDate);
+        });
 
   //Coming Soon lists
   List<MediaItem> get _comingSoon => _mediaItems
@@ -141,15 +147,21 @@ class _HomeScreenState extends State<HomeScreen> {
       )
       .toList();
 
-  List<MediaItem> get _continueWatchingSeries => _mediaItems
-      .where(
-        (item) =>
-            item.typeOfMedia == TypeOfMedia.serie &&
-            item.episodes != null &&
-            item.watchedUntilEpisode != null &&
-            item.watchedUntilEpisode! < item.episodes!,
-      )
-      .toList();
+  List<MediaItem> get _continueWatchingSeries =>
+      _mediaItems
+          .where(
+            (item) =>
+                item.typeOfMedia == TypeOfMedia.serie &&
+                item.episodes != null &&
+                item.watchedUntilEpisode != null &&
+                item.watchedUntilEpisode! < item.episodes!,
+          )
+          .toList()
+        ..sort((a, b) {
+          final aDate = a.lastModified ?? DateTime(0);
+          final bDate = b.lastModified ?? DateTime(0);
+          return bDate.compareTo(aDate);
+        });
 
   List<MediaItem> get _topRatedSeries {
     final list = _mediaItems
@@ -192,15 +204,21 @@ class _HomeScreenState extends State<HomeScreen> {
       )
       .toList();
 
-  List<MediaItem> get _continueWatchingAnime => _mediaItems
-      .where(
-        (item) =>
-            item.typeOfMedia == TypeOfMedia.anime &&
-            item.episodes != null &&
-            item.watchedUntilEpisode != null &&
-            item.watchedUntilEpisode! < item.episodes!,
-      )
-      .toList();
+  List<MediaItem> get _continueWatchingAnime =>
+      _mediaItems
+          .where(
+            (item) =>
+                item.typeOfMedia == TypeOfMedia.anime &&
+                item.episodes != null &&
+                item.watchedUntilEpisode != null &&
+                item.watchedUntilEpisode! < item.episodes!,
+          )
+          .toList()
+        ..sort((a, b) {
+          final aDate = a.lastModified ?? DateTime(0);
+          final bDate = b.lastModified ?? DateTime(0);
+          return bDate.compareTo(aDate);
+        });
 
   List<MediaItem> get _topRatedAnime {
     final list = _mediaItems
@@ -271,8 +289,17 @@ class _HomeScreenState extends State<HomeScreen> {
     return available.first;
   }
 
+  String _buildYearRange(MediaItem item) {
+    final start = item.releaseDate?.year;
+    final end = item.endYear;
+    if (start == null) return '';
+    if (item.typeOfMedia == TypeOfMedia.film) return start.toString();
+    if (end != null && end != start) return '$start - $end';
+    if (end != null && end == start) return start.toString();
+    return '$start - ';
+  }
+
   Widget _continueWatchingRow(List<MediaItem> items) {
-    final reversedItems = items.reversed.toList();
     return Column(
       children: [
         SizedBox(
@@ -280,9 +307,9 @@ class _HomeScreenState extends State<HomeScreen> {
           child: ListView.builder(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
-            itemCount: reversedItems.length,
+            itemCount: items.length,
             itemBuilder: (context, index) {
-              final item = reversedItems[index];
+              final item = items[index];
               return GestureDetector(
                 onTap: () async {
                   await Navigator.push(
@@ -506,9 +533,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
-                      item.releaseDate != null
-                          ? item.releaseDate!.year.toString()
-                          : '',
+                      _buildYearRange(item),
                       style: const TextStyle(
                         fontSize: 10,
                         color: Color(0xFF666666),
@@ -633,9 +658,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       Text(
-                        item.releaseDate != null
-                            ? item.releaseDate!.year.toString()
-                            : '',
+                        _buildYearRange(item),
                         style: const TextStyle(
                           fontSize: 10,
                           color: Color(0xFF666666),
@@ -1233,9 +1256,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   Text(
-                    item.releaseDate != null
-                        ? item.releaseDate!.year.toString()
-                        : '',
+                    _buildYearRange(item),
                     style: const TextStyle(
                       fontSize: 10,
                       color: Color(0xFF666666),

@@ -12,6 +12,16 @@ enum TypeOfMedia {
   anime,
 }
 
+@HiveType(typeId: 2)
+enum MediaStatus {
+  @HiveField(0)
+  inCorso,
+  @HiveField(1)
+  completata,
+  @HiveField(2)
+  cancellata,
+}
+
 @HiveType(typeId: 0)
 class MediaItem extends HiveObject {
   @HiveField(0)
@@ -50,6 +60,12 @@ class MediaItem extends HiveObject {
   DateTime? whenIWatched;
   @HiveField(17)
   bool doIWatched;
+  @HiveField(18)
+  DateTime? lastModified;
+  @HiveField(19)
+  MediaStatus? status;
+  @HiveField(20)
+  int? endYear;
 
   MediaItem({
     required this.typeOfMedia,
@@ -70,5 +86,8 @@ class MediaItem extends HiveObject {
     this.episodes,
     this.watchedUntilEpisode,
     this.whenIWatched,
+    this.lastModified,
+    this.status,
+    this.endYear,
   });
 }

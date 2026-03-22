@@ -14,6 +14,8 @@ class FormScreen extends StatefulWidget {
 }
 
 class _FormScreenState extends State<FormScreen> {
+  MediaStatus? _status;
+
   @override
   void initState() {
     super.initState();
@@ -41,6 +43,9 @@ class _FormScreenState extends State<FormScreen> {
       _rating = widget.mediaItem!.rating;
       _doIWatched = widget.mediaItem!.doIWatched;
       _selectedType = widget.mediaItem!.typeOfMedia;
+
+      _status = widget.mediaItem!.status;
+      _endYearController.text = widget.mediaItem!.endYear?.toString() ?? '';
     }
   }
 
@@ -67,6 +72,8 @@ class _FormScreenState extends State<FormScreen> {
   final TextEditingController _starsController = TextEditingController();
   final TextEditingController _genresController = TextEditingController();
 
+  final TextEditingController _endYearController = TextEditingController();
+
   double? _rating;
   List<String> _stars = [];
   List<String> _genres = [];
@@ -89,6 +96,7 @@ class _FormScreenState extends State<FormScreen> {
     _whenIWatchedController.dispose();
     _starsController.dispose();
     _genresController.dispose();
+    _endYearController.dispose();
 
     super.dispose();
   }
@@ -243,6 +251,122 @@ class _FormScreenState extends State<FormScreen> {
                     },
                     decoration: InputDecoration(labelText: 'Data di uscita'),
                   ),
+                  if (_selectedType != TypeOfMedia.film) ...[
+                    // STATUS
+                    Row(
+                      children: [
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () =>
+                                setState(() => _status = MediaStatus.inCorso),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              margin: const EdgeInsets.only(right: 4),
+                              decoration: BoxDecoration(
+                                color: _status == MediaStatus.inCorso
+                                    ? const Color(0xFF0a2a22)
+                                    : const Color(0xFF111111),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: _status == MediaStatus.inCorso
+                                      ? const Color(0xFF085041)
+                                      : const Color(0xFF2a2a2a),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Text(
+                                'In corso',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: _status == MediaStatus.inCorso
+                                      ? const Color(0xFF9FE1CB)
+                                      : const Color(0xFF666666),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(
+                              () => _status = MediaStatus.completata,
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              margin: const EdgeInsets.symmetric(horizontal: 4),
+                              decoration: BoxDecoration(
+                                color: _status == MediaStatus.completata
+                                    ? const Color(0xFF1e1e3a)
+                                    : const Color(0xFF111111),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: _status == MediaStatus.completata
+                                      ? const Color(0xFF3C3489)
+                                      : const Color(0xFF2a2a2a),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Text(
+                                'Completata',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: _status == MediaStatus.completata
+                                      ? const Color(0xFFCECBF6)
+                                      : const Color(0xFF666666),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: GestureDetector(
+                            onTap: () => setState(
+                              () => _status = MediaStatus.cancellata,
+                            ),
+                            child: Container(
+                              padding: const EdgeInsets.symmetric(vertical: 10),
+                              margin: const EdgeInsets.only(left: 4),
+                              decoration: BoxDecoration(
+                                color: _status == MediaStatus.cancellata
+                                    ? const Color(0xFF2a1208)
+                                    : const Color(0xFF111111),
+                                borderRadius: BorderRadius.circular(8),
+                                border: Border.all(
+                                  color: _status == MediaStatus.cancellata
+                                      ? const Color(0xFF993C1D)
+                                      : const Color(0xFF2a2a2a),
+                                  width: 1,
+                                ),
+                              ),
+                              child: Text(
+                                'Cancellata',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: _status == MediaStatus.cancellata
+                                      ? const Color(0xFFF5C4B3)
+                                      : const Color(0xFF666666),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+
+                    // ANNO FINE - solo se completata o cancellata
+                    if (_status == MediaStatus.completata ||
+                        _status == MediaStatus.cancellata)
+                      TextFormField(
+                        controller: _endYearController,
+                        decoration: const InputDecoration(
+                          labelText: 'Anno di fine',
+                        ),
+                        keyboardType: TextInputType.number,
+                      ),
+                  ],
                   TextFormField(
                     controller: _whenIWatchedController,
                     readOnly: true,
@@ -418,6 +542,11 @@ class _FormScreenState extends State<FormScreen> {
                         widget.mediaItem!.star = _stars;
                         widget.mediaItem!.rating = _rating ?? 0;
                         widget.mediaItem!.doIWatched = _doIWatched;
+                        widget.mediaItem!.status = _status;
+                        widget.mediaItem!.endYear = int.tryParse(
+                          _endYearController.text,
+                        );
+
                         await widget.hiveService.updateMediaItem(
                           widget.mediaItem!,
                         );
@@ -462,6 +591,8 @@ class _FormScreenState extends State<FormScreen> {
                             star: _stars,
                             rating: _rating ?? 0,
                             doIWatched: _doIWatched,
+                            status: _status,
+                            endYear: int.tryParse(_endYearController.text),
                           ),
                         );
                       }
@@ -482,6 +613,8 @@ class _FormScreenState extends State<FormScreen> {
                       _whenIWatchedController.clear();
                       _starsController.clear();
                       _genresController.clear();
+                      _status = null;
+                      _endYearController.clear();
 
                       setState(() {
                         _rating = null;
@@ -489,7 +622,9 @@ class _FormScreenState extends State<FormScreen> {
                         _genres = [];
                         _doIWatched = false;
                         _selectedType = TypeOfMedia.film;
+                        _status = null;
                       });
+
                       if (!mounted) return;
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(content: Text('Titolo salvato con successo!')),

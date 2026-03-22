@@ -9,6 +9,7 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(TypeOfMediaAdapter());
   Hive.registerAdapter(MediaItemAdapter());
+  Hive.registerAdapter(MediaStatusAdapter());
   final hiveService = HiveService();
   await hiveService.init();
   runApp(MainApp(hiveService: hiveService));

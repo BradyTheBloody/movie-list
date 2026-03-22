@@ -16,6 +16,16 @@ class ListScreen extends StatelessWidget {
     super.key,
   });
 
+  String _buildYearRange(MediaItem item) {
+    final start = item.releaseDate?.year;
+    final end = item.endYear;
+    if (start == null) return '';
+    if (item.typeOfMedia == TypeOfMedia.film) return start.toString();
+    if (end != null && end != start) return '$start - $end';
+    if (end != null && end == start) return start.toString();
+    return '$start - ';
+  }
+
   @override
   Widget build(BuildContext context) {
     final sortedItems = List<MediaItem>.from(items)
@@ -116,9 +126,7 @@ class ListScreen extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
-                  item.releaseDate != null
-                      ? item.releaseDate!.year.toString()
-                      : '',
+                  _buildYearRange(item),
                   style: const TextStyle(
                     fontSize: 10,
                     color: Color(0xFF666666),

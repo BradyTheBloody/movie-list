@@ -21,6 +21,7 @@ class HiveService {
   }
 
   Future<void> updateMediaItem(MediaItem media_item) async {
+    media_item.lastModified = DateTime.now();
     await _box.put(media_item.key, media_item);
   }
 }

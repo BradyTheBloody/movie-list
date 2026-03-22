@@ -83,6 +83,17 @@ class _MediaScreenState extends State<MediaScreen> {
     );
   }
 
+  String _buildYearRange() {
+    final start = widget.mediaItem.releaseDate?.year;
+    final end = widget.mediaItem.endYear;
+    if (start == null) return '';
+    if (widget.mediaItem.typeOfMedia == TypeOfMedia.film)
+      return start.toString();
+    if (end != null && end != start) return '$start - $end';
+    if (end != null && end == start) return start.toString();
+    return '$start - ';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -207,10 +218,23 @@ class _MediaScreenState extends State<MediaScreen> {
                             spacing: 6,
                             runSpacing: 6,
                             children: [
-                              if (widget.mediaItem.releaseDate != null)
-                                _chip(
-                                  widget.mediaItem.releaseDate!.year.toString(),
-                                ),
+                              if (widget.mediaItem.typeOfMedia ==
+                                  TypeOfMedia.film)
+                                if (widget.mediaItem.releaseDate != null)
+                                  _chip(
+                                    widget.mediaItem.releaseDate!.year
+                                        .toString(),
+                                  ),
+                              if (widget.mediaItem.typeOfMedia !=
+                                  TypeOfMedia.film)
+                                if (widget.mediaItem.releaseDate != null)
+                                  _chip(_buildYearRange()),
+                              if (widget.mediaItem.status != null)
+                                _chip(switch (widget.mediaItem.status!) {
+                                  MediaStatus.inCorso => 'In corso',
+                                  MediaStatus.completata => 'Completata',
+                                  MediaStatus.cancellata => 'Cancellata',
+                                }),
                               if (widget.mediaItem.duration != null)
                                 _chip('${widget.mediaItem.duration} min'),
                               if (widget.mediaItem.director != null)

@@ -35,13 +35,16 @@ class MediaItemAdapter extends TypeAdapter<MediaItem> {
       episodes: fields[14] as int?,
       watchedUntilEpisode: fields[15] as int?,
       whenIWatched: fields[16] as DateTime?,
+      lastModified: fields[18] as DateTime?,
+      status: fields[19] as MediaStatus?,
+      endYear: fields[20] as int?,
     );
   }
 
   @override
   void write(BinaryWriter writer, MediaItem obj) {
     writer
-      ..writeByte(18)
+      ..writeByte(21)
       ..writeByte(0)
       ..write(obj.typeOfMedia)
       ..writeByte(1)
@@ -77,7 +80,13 @@ class MediaItemAdapter extends TypeAdapter<MediaItem> {
       ..writeByte(16)
       ..write(obj.whenIWatched)
       ..writeByte(17)
-      ..write(obj.doIWatched);
+      ..write(obj.doIWatched)
+      ..writeByte(18)
+      ..write(obj.lastModified)
+      ..writeByte(19)
+      ..write(obj.status)
+      ..writeByte(20)
+      ..write(obj.endYear);
   }
 
   @override
@@ -131,6 +140,50 @@ class TypeOfMediaAdapter extends TypeAdapter<TypeOfMedia> {
   bool operator ==(Object other) =>
       identical(this, other) ||
       other is TypeOfMediaAdapter &&
+          runtimeType == other.runtimeType &&
+          typeId == other.typeId;
+}
+
+class MediaStatusAdapter extends TypeAdapter<MediaStatus> {
+  @override
+  final int typeId = 2;
+
+  @override
+  MediaStatus read(BinaryReader reader) {
+    switch (reader.readByte()) {
+      case 0:
+        return MediaStatus.inCorso;
+      case 1:
+        return MediaStatus.completata;
+      case 2:
+        return MediaStatus.cancellata;
+      default:
+        return MediaStatus.inCorso;
+    }
+  }
+
+  @override
+  void write(BinaryWriter writer, MediaStatus obj) {
+    switch (obj) {
+      case MediaStatus.inCorso:
+        writer.writeByte(0);
+        break;
+      case MediaStatus.completata:
+        writer.writeByte(1);
+        break;
+      case MediaStatus.cancellata:
+        writer.writeByte(2);
+        break;
+    }
+  }
+
+  @override
+  int get hashCode => typeId.hashCode;
+
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      other is MediaStatusAdapter &&
           runtimeType == other.runtimeType &&
           typeId == other.typeId;
 }
