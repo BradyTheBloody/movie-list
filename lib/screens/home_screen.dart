@@ -8,6 +8,7 @@ import 'package:movie_list/models/media_item.dart';
 import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:movie_list/services/backup_service.dart';
+import 'package:movie_list/screens/stats_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   final HiveService hiveService;
@@ -1281,7 +1282,21 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Watch List")),
+      appBar: AppBar(
+        title: Text("Watch List"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.bar_chart),
+            onPressed: () => Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => StatsScreen(mediaItems: _mediaItems),
+              ),
+            ),
+          ),
+        ],
+      ),
+
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
