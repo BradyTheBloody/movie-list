@@ -9,6 +9,7 @@ import 'package:flutter_speed_dial/flutter_speed_dial.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:movie_list/services/backup_service.dart';
 import 'package:movie_list/screens/stats_screen.dart';
+import 'package:workmanager/workmanager.dart';
 
 class HomeScreen extends StatefulWidget {
   final HiveService hiveService;
@@ -280,6 +281,8 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadMediaItems();
+    // NotificationService().showTestNotification();
+    Workmanager().registerOneOffTask('testDailyCheck', 'dailyCheck');
   }
 
   String? _pickGenre(List<String> generi, {String? exclude}) {
