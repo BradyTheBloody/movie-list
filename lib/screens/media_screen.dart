@@ -9,10 +9,12 @@ import 'package:cached_network_image/cached_network_image.dart';
 class MediaScreen extends StatefulWidget {
   final MediaItem mediaItem;
   final HiveService hiveService;
+  final List<MediaItem> allMediaItems;
 
   const MediaScreen({
     required this.mediaItem,
     required this.hiveService,
+    required this.allMediaItems,
     super.key,
   });
 
@@ -68,6 +70,15 @@ class _MediaScreenState extends State<MediaScreen> {
     return uri.queryParameters['v'];
   }
 
+  List<MediaItem> get _collectionItems => widget.allMediaItems
+      .where(
+        (item) =>
+            item.collection != null &&
+            item.collection == widget.mediaItem.collection &&
+            item.key != widget.mediaItem.key,
+      )
+      .toList();
+
   Widget _chip(String label) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -116,7 +127,7 @@ class _MediaScreenState extends State<MediaScreen> {
                       onPressed: () {
                         widget.hiveService.deleteMediaItem(widget.mediaItem);
                         Navigator.pop(context);
-                        Navigator.pop(context);
+                        Navigator.pop(context, true);
                       },
                       child: Text('Elimina'),
                     ),
@@ -517,6 +528,98 @@ class _MediaScreenState extends State<MediaScreen> {
                     ],
                   ),
                 ),
+              if (widget.mediaItem.collection != null &&
+                  _collectionItems.isNotEmpty) ...[
+                const Divider(color: Color(0xFF1E1E1E), thickness: 0.5),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+                  child: Text(
+                    widget.mediaItem.collection!.toUpperCase(),
+                    style: const TextStyle(
+                      fontSize: 11,
+                      color: Color(0xFF555555),
+                      letterSpacing: 0.06,
+                    ),
+                  ),
+                ),
+                SizedBox(
+                  height: 195,
+                  child: ListView.builder(
+                    scrollDirection: Axis.horizontal,
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    itemCount: _collectionItems.length,
+                    itemBuilder: (context, index) {
+                      final item = _collectionItems[index];
+                      return GestureDetector(
+                        onTap: () => Navigator.pushReplacement(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => MediaScreen(
+                              mediaItem: item,
+                              hiveService: widget.hiveService,
+                              allMediaItems: widget.allMediaItems,
+                            ),
+                          ),
+                        ),
+                        child: Container(
+                          width: 100,
+                          margin: const EdgeInsets.only(right: 10),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              ClipRRect(
+                                borderRadius: BorderRadius.circular(8),
+                                child:
+                                    item.cover != null && item.cover!.isNotEmpty
+                                    ? CachedNetworkImage(
+                                        imageUrl: item.cover!,
+                                        width: 100,
+                                        height: 148,
+                                        fit: BoxFit.cover,
+                                        errorWidget: (context, url, error) =>
+                                            Container(
+                                              width: 100,
+                                              height: 148,
+                                              color: const Color(0xFF1E1E1E),
+                                            ),
+                                        placeholder: (context, url) =>
+                                            Container(
+                                              width: 100,
+                                              height: 148,
+                                              color: const Color(0xFF1a1a1a),
+                                            ),
+                                      )
+                                    : Container(
+                                        width: 100,
+                                        height: 148,
+                                        color: const Color(0xFF1E1E1E),
+                                      ),
+                              ),
+                              const SizedBox(height: 5),
+                              Text(
+                                item.title,
+                                style: const TextStyle(
+                                  fontSize: 11,
+                                  color: Color(0xFFCCCCCC),
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                _buildYearRange(),
+                                style: const TextStyle(
+                                  fontSize: 10,
+                                  color: Color(0xFF666666),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ],
           ),
         ),

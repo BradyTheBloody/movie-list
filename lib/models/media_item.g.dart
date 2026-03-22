@@ -38,13 +38,14 @@ class MediaItemAdapter extends TypeAdapter<MediaItem> {
       lastModified: fields[18] as DateTime?,
       status: fields[19] as MediaStatus?,
       endYear: fields[20] as int?,
+      collection: fields[21] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, MediaItem obj) {
     writer
-      ..writeByte(21)
+      ..writeByte(22)
       ..writeByte(0)
       ..write(obj.typeOfMedia)
       ..writeByte(1)
@@ -86,7 +87,9 @@ class MediaItemAdapter extends TypeAdapter<MediaItem> {
       ..writeByte(19)
       ..write(obj.status)
       ..writeByte(20)
-      ..write(obj.endYear);
+      ..write(obj.endYear)
+      ..writeByte(21)
+      ..write(obj.collection);
   }
 
   @override

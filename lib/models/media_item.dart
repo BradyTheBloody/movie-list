@@ -66,6 +66,8 @@ class MediaItem extends HiveObject {
   MediaStatus? status;
   @HiveField(20)
   int? endYear;
+  @HiveField(21)
+  String? collection;
 
   MediaItem({
     required this.typeOfMedia,
@@ -89,5 +91,6 @@ class MediaItem extends HiveObject {
     this.lastModified,
     this.status,
     this.endYear,
+    this.collection,
   });
 }

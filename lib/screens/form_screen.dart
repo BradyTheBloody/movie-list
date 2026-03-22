@@ -46,6 +46,7 @@ class _FormScreenState extends State<FormScreen> {
 
       _status = widget.mediaItem!.status;
       _endYearController.text = widget.mediaItem!.endYear?.toString() ?? '';
+      _collectionController.text = widget.mediaItem!.collection ?? '';
     }
   }
 
@@ -73,6 +74,7 @@ class _FormScreenState extends State<FormScreen> {
   final TextEditingController _genresController = TextEditingController();
 
   final TextEditingController _endYearController = TextEditingController();
+  final TextEditingController _collectionController = TextEditingController();
 
   double? _rating;
   List<String> _stars = [];
@@ -97,6 +99,7 @@ class _FormScreenState extends State<FormScreen> {
     _starsController.dispose();
     _genresController.dispose();
     _endYearController.dispose();
+    _collectionController.dispose();
 
     super.dispose();
   }
@@ -182,6 +185,10 @@ class _FormScreenState extends State<FormScreen> {
                   TextFormField(
                     controller: _originaltitleController,
                     decoration: InputDecoration(labelText: 'Titolo Originale'),
+                  ),
+                  TextFormField(
+                    controller: _collectionController,
+                    decoration: const InputDecoration(labelText: 'Collezione'),
                   ),
                   TextFormField(
                     controller: _directorController,
@@ -481,6 +488,7 @@ class _FormScreenState extends State<FormScreen> {
                       });
                     },
                   ),
+
                   ElevatedButton(
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF3C3489),
@@ -546,6 +554,10 @@ class _FormScreenState extends State<FormScreen> {
                         widget.mediaItem!.endYear = int.tryParse(
                           _endYearController.text,
                         );
+                        widget.mediaItem!.collection =
+                            _collectionController.text.isEmpty
+                            ? null
+                            : _collectionController.text;
 
                         await widget.hiveService.updateMediaItem(
                           widget.mediaItem!,
@@ -593,11 +605,14 @@ class _FormScreenState extends State<FormScreen> {
                             doIWatched: _doIWatched,
                             status: _status,
                             endYear: int.tryParse(_endYearController.text),
+                            collection: _collectionController.text.isEmpty
+                                ? null
+                                : _collectionController.text,
                           ),
                         );
                       }
 
-                      // Pulisco i campi
+                      // Pulisco i campi - reset
                       _titleController.clear();
                       _originaltitleController.clear();
                       _directorController.clear();
@@ -615,6 +630,7 @@ class _FormScreenState extends State<FormScreen> {
                       _genresController.clear();
                       _status = null;
                       _endYearController.clear();
+                      _collectionController.clear();
 
                       setState(() {
                         _rating = null;

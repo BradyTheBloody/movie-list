@@ -323,6 +323,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       builder: (context) => MediaScreen(
                         mediaItem: item,
                         hiveService: widget.hiveService,
+                        allMediaItems: _mediaItems,
                       ),
                     ),
                   );
@@ -453,6 +454,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     builder: (context) => MediaScreen(
                       mediaItem: item,
                       hiveService: widget.hiveService,
+                      allMediaItems: _mediaItems,
                     ),
                   ),
                 );
@@ -574,6 +576,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       builder: (context) => MediaScreen(
                         mediaItem: item,
                         hiveService: widget.hiveService,
+                        allMediaItems: _mediaItems,
                       ),
                     ),
                   );
@@ -686,18 +689,22 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_selectedCategory == TypeOfMedia.film) {
       return [
         GestureDetector(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ListScreen(
-                title: 'Tutti i film',
-                items: _mediaItems
-                    .where((item) => item.typeOfMedia == TypeOfMedia.film)
-                    .toList(),
-                hiveService: widget.hiveService,
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ListScreen(
+                  title: 'Tutti i film',
+                  items: _mediaItems
+                      .where((item) => item.typeOfMedia == TypeOfMedia.film)
+                      .toList(),
+                  hiveService: widget.hiveService,
+                ),
               ),
-            ),
-          ),
+            );
+            _loadMediaItems();
+          },
+
           child: Container(
             margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
             padding: const EdgeInsets.symmetric(vertical: 10),
@@ -748,18 +755,21 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_selectedCategory == TypeOfMedia.serie) {
       return [
         GestureDetector(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ListScreen(
-                title: 'Tutte le serie',
-                items: _mediaItems
-                    .where((item) => item.typeOfMedia == TypeOfMedia.serie)
-                    .toList(),
-                hiveService: widget.hiveService,
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ListScreen(
+                  title: 'Tutti i film',
+                  items: _mediaItems
+                      .where((item) => item.typeOfMedia == TypeOfMedia.film)
+                      .toList(),
+                  hiveService: widget.hiveService,
+                ),
               ),
-            ),
-          ),
+            );
+            _loadMediaItems();
+          },
           child: Container(
             margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
             padding: const EdgeInsets.symmetric(vertical: 10),
@@ -814,18 +824,21 @@ class _HomeScreenState extends State<HomeScreen> {
     if (_selectedCategory == TypeOfMedia.anime) {
       return [
         GestureDetector(
-          onTap: () => Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => ListScreen(
-                title: 'Tutti gli Anime',
-                items: _mediaItems
-                    .where((item) => item.typeOfMedia == TypeOfMedia.anime)
-                    .toList(),
-                hiveService: widget.hiveService,
+          onTap: () async {
+            await Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ListScreen(
+                  title: 'Tutti i film',
+                  items: _mediaItems
+                      .where((item) => item.typeOfMedia == TypeOfMedia.film)
+                      .toList(),
+                  hiveService: widget.hiveService,
+                ),
               ),
-            ),
-          ),
+            );
+            _loadMediaItems();
+          },
           child: Container(
             margin: const EdgeInsets.fromLTRB(16, 8, 16, 4),
             padding: const EdgeInsets.symmetric(vertical: 10),
@@ -969,6 +982,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     builder: (context) => MediaScreen(
                       mediaItem: item,
                       hiveService: widget.hiveService,
+                      allMediaItems: _mediaItems,
                     ),
                   ),
                 );
@@ -1182,6 +1196,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   builder: (context) => MediaScreen(
                     mediaItem: item,
                     hiveService: widget.hiveService,
+                    allMediaItems: _mediaItems,
                   ),
                 ),
               );
