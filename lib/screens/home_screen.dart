@@ -760,9 +760,9 @@ class _HomeScreenState extends State<HomeScreen> {
               context,
               MaterialPageRoute(
                 builder: (context) => ListScreen(
-                  title: 'Tutti i film',
+                  title: 'Tutte le serie',
                   items: _mediaItems
-                      .where((item) => item.typeOfMedia == TypeOfMedia.film)
+                      .where((item) => item.typeOfMedia == TypeOfMedia.serie)
                       .toList(),
                   hiveService: widget.hiveService,
                 ),
@@ -829,9 +829,9 @@ class _HomeScreenState extends State<HomeScreen> {
               context,
               MaterialPageRoute(
                 builder: (context) => ListScreen(
-                  title: 'Tutti i film',
+                  title: 'Tutti gli anime',
                   items: _mediaItems
-                      .where((item) => item.typeOfMedia == TypeOfMedia.film)
+                      .where((item) => item.typeOfMedia == TypeOfMedia.anime)
                       .toList(),
                   hiveService: widget.hiveService,
                 ),

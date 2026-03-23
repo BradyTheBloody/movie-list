@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:movie_list/models/media_item.dart';
 import 'package:movie_list/services/hive_services.dart';
 import 'package:intl/intl.dart';
+import 'package:movie_list/services/tmdb_service.dart';
 
 class FormScreen extends StatefulWidget {
   final MediaItem? mediaItem;
@@ -15,6 +16,63 @@ class FormScreen extends StatefulWidget {
 
 class _FormScreenState extends State<FormScreen> {
   MediaStatus? _status;
+  final TmdbService _tmdbService = TmdbService();
+  List<Map<String, dynamic>> _searchResults = [];
+  bool _isSearchingTmdb = false;
+  final TextEditingController _tmdbSearchController = TextEditingController();
+  List<String> _directors = [];
+  final TextEditingController _directorInputController =
+      TextEditingController();
+
+  Future<void> _searchTmdb(String query) async {
+    if (query.isEmpty) {
+      setState(() => _searchResults = []);
+      return;
+    }
+    setState(() => _isSearchingTmdb = true);
+    final results = await _tmdbService.searchMedia(query, _selectedType);
+    setState(() {
+      _searchResults = results;
+      _isSearchingTmdb = false;
+    });
+  }
+
+  Future<void> _fillFromTmdb(Map<String, dynamic> result) async {
+    final id = result['id'] as int;
+    final details = await _tmdbService.getDetails(id, _selectedType);
+    if (details == null) return;
+
+    final mapped = _tmdbService.mapToMediaItem(details, _selectedType);
+
+    setState(() {
+      _titleController.text = mapped['title'] ?? '';
+      _originaltitleController.text = mapped['originalTitle'] ?? '';
+      _plotController.text = mapped['plot'] ?? '';
+      _coverController.text = mapped['cover'] ?? '';
+      _directors = List<String>.from(mapped['directors'] ?? []);
+      _stars = List<String>.from(mapped['stars'] ?? []);
+      _genres = List<String>.from(mapped['genres'] ?? []);
+      if (mapped['duration'] != null) {
+        _durationController.text = mapped['duration'].toString();
+      }
+      if (mapped['seasons'] != null) {
+        _seasonsController.text = mapped['seasons'].toString();
+      }
+      if (mapped['episodes'] != null) {
+        _episodesController.text = mapped['episodes'].toString();
+      }
+      if (mapped['releaseDate'] != null &&
+          mapped['releaseDate'].toString().isNotEmpty) {
+        try {
+          final date = DateTime.parse(mapped['releaseDate']);
+          _releaseDateController.text =
+              '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+        } catch (_) {}
+      }
+      _searchResults = [];
+      _tmdbSearchController.clear();
+    });
+  }
 
   @override
   void initState() {
@@ -100,6 +158,8 @@ class _FormScreenState extends State<FormScreen> {
     _genresController.dispose();
     _endYearController.dispose();
     _collectionController.dispose();
+    _tmdbSearchController.dispose();
+    _directorInputController.dispose();
 
     super.dispose();
   }
@@ -121,6 +181,73 @@ class _FormScreenState extends State<FormScreen> {
                 spacing: 12,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
+                  // RICERCA TMDB
+                  TextFormField(
+                    controller: _tmdbSearchController,
+                    decoration: InputDecoration(
+                      labelText: 'Cerca su TMDB',
+                      prefixIcon: const Icon(Icons.search, size: 18),
+                      suffixIcon: _isSearchingTmdb
+                          ? const Padding(
+                              padding: EdgeInsets.all(12),
+                              child: SizedBox(
+                                width: 16,
+                                height: 16,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                ),
+                              ),
+                            )
+                          : null,
+                    ),
+                    onChanged: (value) => _searchTmdb(value),
+                  ),
+
+                  // RISULTATI TMDB
+                  if (_searchResults.isNotEmpty)
+                    Container(
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1a1a1a),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: const Color(0xFF2a2a2a),
+                          width: 0.5,
+                        ),
+                      ),
+                      child: ListView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: _searchResults.take(5).length,
+                        itemBuilder: (context, index) {
+                          final result = _searchResults[index];
+                          final title = result['title'] ?? result['name'] ?? '';
+                          final date =
+                              result['release_date'] ??
+                              result['first_air_date'] ??
+                              '';
+                          final year = date.isNotEmpty
+                              ? date.substring(0, 4)
+                              : '';
+                          return ListTile(
+                            title: Text(
+                              title,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.white,
+                              ),
+                            ),
+                            subtitle: Text(
+                              year,
+                              style: const TextStyle(
+                                fontSize: 11,
+                                color: Color(0xFF666666),
+                              ),
+                            ),
+                            onTap: () => _fillFromTmdb(result),
+                          );
+                        },
+                      ),
+                    ),
                   Row(
                     children: TypeOfMedia.values.map((type) {
                       final isSelected = _selectedType == type;
